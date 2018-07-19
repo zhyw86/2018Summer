@@ -1,0 +1,78 @@
+from collections import Counter
+
+import matplotlib.pyplot as plt
+import numpy as np
+import matplotlib.pyplot as plt
+
+from sklearn.datasets import make_classification
+from sklearn.neural_network import MLPClassifier
+from sklearn.model_selection import cross_val_score
+
+from imblearn.pipeline import make_pipeline
+from imblearn.under_sampling import (ClusterCentroids, RandomUnderSampler,
+                                     NearMiss,
+                                     InstanceHardnessThreshold,
+                                     CondensedNearestNeighbour,
+                                     EditedNearestNeighbours,
+                                     RepeatedEditedNearestNeighbours,
+                                     AllKNN,
+                                     NeighbourhoodCleaningRule,
+                                     OneSidedSelection)
+print(__doc__)
+
+scores=[]
+clf = MLPClassifier(solver='lbfgs', alpha=1e-5)
+validated=cross_val_score(clf,features,labels,cv=10,scoring='roc_auc',n_jobs=8)
+scores.append(validated)
+#best
+sampler = ClusterCentroids()
+clf = make_pipeline(sampler, clf)
+validated=cross_val_score(clf,features,labels,cv=10,scoring='roc_auc',n_jobs=8)
+scores.append(validated)
+
+# sampler = RandomUnderSampler()
+# clf = make_pipeline(sampler, clf)
+# validated=cross_val_score(clf,features,labels,cv=10,scoring='roc_auc',n_jobs=8)
+# scores.append(validated)
+# sampler = NearMiss()
+# clf = make_pipeline(sampler, clf)
+# validated=cross_val_score(clf,features,labels,cv=10,scoring='roc_auc',n_jobs=8)
+# scores.append(validated)
+# sampler = InstanceHardnessThreshold()
+# clf = make_pipeline(sampler, clf)
+# validated=cross_val_score(clf,features,labels,cv=10,scoring='roc_auc',n_jobs=8)
+# scores.append(validated)
+# sampler = CondensedNearestNeighbour()
+# clf = make_pipeline(sampler, clf)
+# validated=cross_val_score(clf,features,labels,cv=10,scoring='roc_auc',n_jobs=8)
+# scores.append(validated)
+
+# sampler = EditedNearestNeighbours()
+# clf = make_pipeline(sampler, clf)
+# validated=cross_val_score(clf,features,labels,cv=10,scoring='roc_auc',n_jobs=8)
+# scores.append(validated)
+sampler = RepeatedEditedNearestNeighbours()
+clf = make_pipeline(sampler, clf)
+validated=cross_val_score(clf,features,labels,cv=10,scoring='roc_auc',n_jobs=8)
+scores.append(validated)
+sampler = AllKNN()
+clf = make_pipeline(sampler, clf)
+validated=cross_val_score(clf,features,labels,cv=10,scoring='roc_auc',n_jobs=8)
+scores.append(validated)
+sampler = NeighbourhoodCleaningRule()
+clf = make_pipeline(sampler, clf)
+validated=cross_val_score(clf,features,labels,cv=10,scoring='roc_auc',n_jobs=8)
+scores.append(validated)
+sampler = OneSidedSelection()
+clf = make_pipeline(sampler, clf)
+validated=cross_val_score(clf,features,labels,cv=10,scoring='roc_auc',n_jobs=8)
+scores.append(validated)
+
+df = pd.DataFrame(scores)	
+sns.boxplot(data=df.transpose())
+plt.xlabel('Sampling methods')
+plt.ylabel('ROC AUC')
+plt.title('ROC AUC score as a function of sampling')
+methods = ['no', 'Cluster Centroids','RepeatedEditedNearestNeighbours','AllKNN','NeighbourhoodCleaningRule','OneSidedSelection'OneSidedSelection]
+plt.xticks([0,1,2,3,4,5,6], methods, rotation='vertical')
+plt.show()

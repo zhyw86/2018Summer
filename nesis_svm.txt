@@ -1,0 +1,53 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn import svm
+from sklearn.model_selection import train_test_split
+from sklearn import metrics
+from sklearn.metrics import roc_auc_score
+from sklearn.model_selection import cross_val_score
+from sklearn.feature_selection import SelectFromModel
+from matplotlib import pyplot as plt
+import seaborn as sns
+import pandas as pd
+import numpy as np
+
+features = pd.read_csv('neiss_20180620.csv')
+features.head(5)
+features.shape
+
+need_dummy=['BDYPT', 'DIAG', 'DISP', 'FMV', 'INTENT', 'STRATUM', 'HISP_C', 'TRMON_C', 'TRDAY_C', 'AGEG4_C', 'AGEG6_C', 'BDYPTG_C', 'RACE2_C', 'RACETH_C', 'INTENT_C', 'PCAUSE_C', 'ICAUSE_C', 'INTCAU_C', 'male', 'agegroup']
+for i in need_dummy:
+    just_dummies = pd.get_dummies(features[i],i)
+    features = pd.concat([features, just_dummies], axis=1)      
+    features.drop([i], inplace=True, axis=1)
+	
+
+labels = np.array(features['farm'])
+features= features.drop(['farm'], axis = 1)
+# Saving feature names for later use
+feature_list = list(features.columns)
+# Convert to numpy array
+features = np.array(features)
+
+train_features, test_features, train_labels, test_labels = train_test_split(features,labels, test_size = 0.2)#, random_state = 42)
+print('Training Features Shape:', train_features.shape)
+print('Training Labels Shape:', train_labels.shape)
+print('Testing Features Shape:', test_features.shape)
+print('Testing Labels Shape:', test_labels.shape)
+
+scores=[]
+for val in range (20,200,20): #get penal val
+#NESIS 880 
+#NTDB 260
+#for val in range (3,20): #get tree depth
+#for val in range (26,36,1): #get num of estimator
+    clf = svm.SVC(kernel='linear', C=1.0,class_weight={1:1000,0:1})
+    validated=cross_val_score(clf,train_features,train_labels,cv=10,scoring='f1',n_jobs=8)
+    scores.append(validated)
+	
+df = pd.DataFrame(scores)	
+sns.boxplot(data=df.transpose())
+#plt.xlabel('penalties')
+#plt.ylabel('ROC AUC')
+#plt.title('ROC AUC scores')
+plt.show()

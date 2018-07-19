@@ -1,0 +1,55 @@
+from sklearn.ensemble.partial_dependence import plot_partial_dependence
+from sklearn.ensemble.partial_dependence import partial_dependence
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn import metrics
+from sklearn.metrics import roc_auc_score
+from sklearn.model_selection import cross_val_score
+from sklearn.feature_selection import SelectFromModel
+from matplotlib import pyplot as plt
+import seaborn as sns
+import pandas as pd
+import numpy as np
+
+from xgboost import XGBClassifier
+from xgboost import plot_importance
+
+features = pd.read_csv('nemsis_20180718_without_time.csv')
+features.head(5)
+features.shape
+
+need_dummy=['agegroup', 'E02_05', 'E03_01', 'E03_02', 'E06_12', 'E06_13', 'E07_01','E07_34', 'E08_05', 'E08_06', 'E09_03', 'E09_04', 'E09_11', 'E09_12', 'E09_13','E09_15', 'E09_16', 'E10_01', 'E11_01', 'E11_02', 'E20_10', 'E20_16', 'E20_17','E22_01', 'E22_02', 'PPI_drowning', 'Drowning', 'USCensusRegion', 'USCensusDivision', 'NasemsoRegion', 'Urbanicity', 'futile']
+for i in need_dummy:
+    just_dummies = pd.get_dummies(features[i],i)
+    features = pd.concat([features, just_dummies], axis=1)      
+    features.drop([i], inplace=True, axis=1)
+
+labels = np.array(features['farm'])
+features= features.drop(['farm'], axis = 1)
+# Saving feature names for later use
+feature_list = list(features.columns)
+# Convert to numpy array
+features = np.array(features)
+
+# Split the data into training and testing sets
+train_features, test_features, train_labels, test_labels = train_test_split(features,labels, test_size = 0.2)#, random_state = 42)
+print('Training Features Shape:', train_features.shape)
+print('Training Labels Shape:', train_labels.shape)
+print('Testing Features Shape:', test_features.shape)
+print('Testing Labels Shape:', test_labels.shape)
+
+scores=[]
+for val in range (150,400,50): #get penal val
+#for val in range (3,20): #get tree depth
+#for val in range (26,36,1): #get num of estimator
+    #clf = RandomForestClassifier(max_depth=7,class_weight={1:val},max_features='auto',n_estimators=26)
+    clf = XGBClassifier(scale_pos_weight=val,max_depth=5,learning_rate =0.01)
+    validated=cross_val_score(clf,train_features,train_labels,cv=10,scoring='roc_auc',n_jobs=8)
+    scores.append(validated)
+
+df = pd.DataFrame(scores)	
+sns.boxplot(data=df.transpose())
+#plt.xlabel('penalties')
+#plt.ylabel('ROC AUC')
+#plt.title('ROC AUC scores')
+plt.show()
