@@ -11,11 +11,13 @@ from sklearn import metrics
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import cross_val_score
 from sklearn.feature_selection import SelectFromModel
+from sklearn.metrics import accuracy_score, precision_score, recall_score 
 from matplotlib import pyplot as plt
 import seaborn as sns
 import pandas as pd
 import numpy as np
 from collections import Counter
+from multiscorer import MultiScorer
 #from imblearn.datasets import make_imbalance
 #from imblearn.under_sampling import RandomUnderSampler
 # Import tools needed for visualization
@@ -66,7 +68,12 @@ print('Training Labels Shape:', train_labels.shape)
 print('Testing Features Shape:', test_features.shape)
 print('Testing Labels Shape:', test_labels.shape)
 
-scorer = {'acc': 'accuracy','prec_macro': 'precision_macro','rec_micro': 'recall_macro','f1':'f1','roc_auc':'roc+auc'}
+#scorer = {'acc': 'accuracy','prec_macro': 'precision_macro','rec_micro': 'recall_macro','f1':'f1','roc_auc':'roc+auc'}
+scorer = MultiScorer({
+    'Accuracy' : (accuracy_score, {}),
+    'Precision' : (precision_score, {'pos_label': 1, 'average':'macro'}),
+    'Recall' : (recall_score, {'pos_label': 1, 'average':'macro'})})
+
 
 for val in range (20,60,10): #get penal val
 #NESIS 880 
@@ -77,13 +84,12 @@ for val in range (20,60,10): #get penal val
     clf = XGBClassifier(scale_pos_weight=val,max_depth=5,learning_rate =0.001)
     #validated=cross_val_score(clf,train_features,train_labels,cv=5,scoring='f1',n_jobs=8)
     #scores.append(validated)
-	cross_val_score(clf,train_features,train_labels,cv=5,scoring=scorer,n_jobs=8)
-	results = scorer.get_results()
-	    for metric_name in results.keys():
+    cross_val_score(clf,train_features,train_labels,cv=5,scoring=scorer,n_jobs=8)
+    results = scorer.get_results()
+    for metric_name in results.keys():
         average_score = np.average(results[metric_name])
         print('%s : %f' % (metric_name, average_score))
-
-    print 'time', time.time() - start, '\n\n
+    print 'time', time.time() - start, '\n\n'
 
 df = pd.DataFrame(scores)	
 sns.boxplot(data=df.transpose())
