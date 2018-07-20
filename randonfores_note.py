@@ -4,6 +4,8 @@ conda install -c glemaitre imbalanced-learn
 from sklearn.ensemble.partial_dependence import plot_partial_dependence
 from sklearn.ensemble.partial_dependence import partial_dependence
 from sklearn.ensemble import RandomForestClassifier
+from xgboost import XGBClassifier
+from xgboost import plot_importance
 from sklearn.model_selection import train_test_split
 from sklearn import metrics
 from sklearn.metrics import roc_auc_score
@@ -63,17 +65,25 @@ print('Training Features Shape:', train_features.shape)
 print('Training Labels Shape:', train_labels.shape)
 print('Testing Features Shape:', test_features.shape)
 print('Testing Labels Shape:', test_labels.shape)
-			
-scores=[]
-for val in range (20,200,20): #get penal val
+
+scorer = {'acc': 'accuracy','prec_macro': 'precision_macro','rec_micro': 'recall_macro','f1':'f1','roc_auc':'roc+auc'}
+
+for val in range (20,60,10): #get penal val
 #NESIS 880 
 #NTDB 260
 #for val in range (3,20): #get tree depth
 #for val in range (26,36,1): #get num of estimator
     #clf = RandomForestClassifier(max_depth=7,class_weight={1:880,0:1},max_features='auto',n_estimators=26)
-    clf = XGBClassifier(scale_pos_weight=val,max_depth=5,learning_rate =0.01)
-    validated=cross_val_score(clf,train_features,train_labels,cv=10,scoring='f1',n_jobs=8)
-    scores.append(validated)
+    clf = XGBClassifier(scale_pos_weight=val,max_depth=5,learning_rate =0.001)
+    #validated=cross_val_score(clf,train_features,train_labels,cv=5,scoring='f1',n_jobs=8)
+    #scores.append(validated)
+	cross_val_score(clf,train_features,train_labels,cv=5,scoring=scorer,n_jobs=8)
+	results = scorer.get_results()
+	    for metric_name in results.keys():
+        average_score = np.average(results[metric_name])
+        print('%s : %f' % (metric_name, average_score))
+
+    print 'time', time.time() - start, '\n\n
 
 df = pd.DataFrame(scores)	
 sns.boxplot(data=df.transpose())
