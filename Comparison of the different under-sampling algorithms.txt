@@ -89,6 +89,13 @@ for i in need_dummy:
     features = pd.concat([features, just_dummies], axis=1)      
     features.drop([i], inplace=True, axis=1)
 
+labels = np.array(features['farm'])
+features= features.drop(['farm'], axis = 1)
+# Saving feature names for later use
+feature_list = list(features.columns)
+# Convert to numpy array
+features = np.array(features)
+
 # Apply One-Sided Selection
 oss =OneSidedSelection(ratio='auto', return_indices=True, random_state=None, size_ngh=None, n_neighbors=None, n_seeds_S=1, n_jobs=4)
-
+X_resampled, y_resampled, idx_resampled = oss.fit_sample(features, labels)
