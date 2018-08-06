@@ -76,3 +76,7 @@ plt.title('ROC AUC score as a function of sampling')
 methods = ['no', 'Cluster Centroids','RepeatedEditedNearestNeighbours','AllKNN','NeighbourhoodCleaningRule','OneSidedSelection'OneSidedSelection]
 plt.xticks([0,1,2,3,4,5,6], methods, rotation='vertical')
 plt.show()
+
+
+
+from imblearn.under_sampling import OneSidedSelection
