@@ -80,3 +80,6 @@ plt.show()
 
 
 from imblearn.under_sampling import OneSidedSelection
+# Apply One-Sided Selection
+oss =OneSidedSelection(ratio='auto', return_indices=True, random_state=None, size_ngh=None, n_neighbors=None, n_seeds_S=1, n_jobs=4)
+
