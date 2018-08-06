@@ -80,6 +80,15 @@ plt.show()
 
 
 from imblearn.under_sampling import OneSidedSelection
+import pandas as pd
+features = pd.read_csv('neiss_20180620.csv')
+
+need_dummy=['BDYPT', 'DIAG', 'DISP', 'FMV', 'INTENT', 'STRATUM', 'HISP_C', 'TRMON_C', 'TRDAY_C', 'AGEG4_C', 'AGEG6_C', 'BDYPTG_C', 'RACE2_C', 'RACETH_C', 'INTENT_C', 'PCAUSE_C', 'ICAUSE_C', 'INTCAU_C', 'male', 'agegroup']
+for i in need_dummy:
+    just_dummies = pd.get_dummies(features[i],i)
+    features = pd.concat([features, just_dummies], axis=1)      
+    features.drop([i], inplace=True, axis=1)
+
 # Apply One-Sided Selection
 oss =OneSidedSelection(ratio='auto', return_indices=True, random_state=None, size_ngh=None, n_neighbors=None, n_seeds_S=1, n_jobs=4)
 
